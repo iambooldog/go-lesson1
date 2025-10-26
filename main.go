@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,8 +12,6 @@ import (
 
 const (
 	statsURL = "http://srv.msk01.gigacorp.local/_stats"
-
-	pollInterval = 10 * time.Second
 
 	maxConsecutiveErrors = 3
 
@@ -41,8 +38,6 @@ func main() {
 		Timeout: 5 * time.Second,
 	}
 
-	log.Printf("Запуск мониторинга сервера: %s (интервал: %s)\n", statsURL, pollInterval)
-
 	for {
 		stats, err := fetchAndParseStats(client, statsURL)
 
@@ -56,8 +51,6 @@ func main() {
 			consecutiveErrors = 0
 			checkMetrics(stats)
 		}
-
-		time.Sleep(pollInterval)
 	}
 }
 
@@ -143,8 +136,8 @@ func checkMetrics(stats *ServerStats) {
 		netUsage := float64(stats.UsedNet) / float64(stats.TotalNet)
 		if netUsage > netUsageThreshold {
 			freeNetBps := stats.TotalNet - stats.UsedNet
-			freeNetMbps := float64(freeNetBps*8) / 1_000_000.0
-			fmt.Printf("Network bandwidth usage high: %.2f Mbit/s available\n", freeNetMbps)
+			freeNetMBps := float64(freeNetBps) / 1_000_000.0
+			fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", int64(freeNetMBps))
 		}
 	}
 }
